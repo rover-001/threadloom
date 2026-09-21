@@ -91,6 +91,9 @@ impl From<String> for OptClass {
 impl From<Option<String>> for OptClass {
     fn from(opt: Option<String>) -> Self { OptClass(opt) }
 }
+impl From<Option<&str>> for OptClass {
+    fn from(opt: Option<&str>) -> Self { OptClass(opt.filter(|s| !s.is_empty()).map(|s| s.to_string())) }
+}
 impl From<()> for OptClass {
     fn from(_: ()) -> Self { OptClass(None) }
 }
@@ -198,5 +201,119 @@ mod tests {
         let html = render_to_string(&divider);
         assert!(html.contains("<hr"));
         assert!(html.contains("my-6"));
+    }
+
+    #[test]
+    fn test_divider_vertical_component() {
+        let divider = Divider(DividerProps {
+            orientation: "vertical".into(),
+            mx: 4,
+            ..Default::default()
+        });
+        let html = render_to_string(&divider);
+        assert!(html.contains("role=\"separator\""));
+        assert!(html.contains("aria-orientation=\"vertical\""));
+        assert!(html.contains("border-l"));
+        assert!(html.contains("mx-4"));
+    }
+
+    #[test]
+    fn test_tooltip_component() {
+        let tt = Tooltip(TooltipProps {
+            content: "Helpful text".to_string(),
+            children: vec![element("button").child(text("Hover me")).into_view()],
+            ..Default::default()
+        });
+        let html = render_to_string(&tt);
+        assert!(html.contains("tl-tooltip-wrapper"));
+        assert!(html.contains("role=\"tooltip\""));
+        assert!(html.contains("Helpful text"));
+        assert!(html.contains("Hover me"));
+    }
+
+    #[test]
+    fn test_tooltip_with_tooltip_text_prop() {
+        let tt = Tooltip(TooltipProps {
+            tooltip_text: "Legacy text".to_string(),
+            children: vec![text("Item")],
+            ..Default::default()
+        });
+        let html = render_to_string(&tt);
+        assert!(html.contains("Legacy text"));
+    }
+
+    #[test]
+    fn test_avatar_component() {
+        let av_with_img = Avatar(AvatarProps {
+            src: "https://example.com/user.jpg".into(),
+            fallback: "JD".to_string(),
+            ..Default::default()
+        });
+        let html = render_to_string(&av_with_img);
+        assert!(html.contains("tl-avatar"));
+        assert!(html.contains("src=\"https://example.com/user.jpg\""));
+        assert!(html.contains("alt=\"JD\""));
+
+        let av_fallback = Avatar(AvatarProps {
+            fallback: "AK".to_string(),
+            ..Default::default()
+        });
+        let html_fallback = render_to_string(&av_fallback);
+        assert!(html_fallback.contains("tl-avatar-fallback"));
+        assert!(html_fallback.contains("AK"));
+    }
+
+    #[test]
+    fn test_docs_pagination_component() {
+        let pag = DocsPagination(DocsPaginationProps {
+            prev_title: "Installation".into(),
+            prev_href: "/docs/installation".into(),
+            next_title: "Client Core".into(),
+            next_href: "/docs/client/core".into(),
+            ..Default::default()
+        });
+        let html = render_to_string(&pag);
+        assert!(html.contains("aria-label=\"Documentation pagination\""));
+        assert!(html.contains("href=\"/docs/installation\""));
+        assert!(html.contains("Installation"));
+        assert!(html.contains("href=\"/docs/client/core\""));
+        assert!(html.contains("Client Core"));
+    }
+
+    #[test]
+    fn test_progress_component() {
+        let prog = Progress(ProgressProps {
+            value: 65.0,
+            ..Default::default()
+        });
+        let html = render_to_string(&prog);
+        assert!(html.contains("role=\"progressbar\""));
+        assert!(html.contains("aria-valuenow=\"65\""));
+    }
+
+    #[test]
+    fn test_separator_component() {
+        let sep = Separator(SeparatorProps {
+            orientation: "vertical".into(),
+            ..Default::default()
+        });
+        let html = render_to_string(&sep);
+        assert!(html.contains("role=\"separator\""));
+        assert!(html.contains("tl-separator-vertical"));
+    }
+
+    #[test]
+    fn test_card_component() {
+        let card = Card(CardProps {
+            title: "Settings".to_string(),
+            wide: true,
+            children: vec![text("Body content")],
+            ..Default::default()
+        });
+        let html = render_to_string(&card);
+        assert!(html.contains("tl-card"));
+        assert!(html.contains("Settings"));
+        assert!(html.contains("md:col-span-2"));
+        assert!(html.contains("Body content"));
     }
 }

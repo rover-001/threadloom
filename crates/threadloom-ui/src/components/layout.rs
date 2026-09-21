@@ -1589,43 +1589,79 @@ pub struct DividerProps {
     pub class: OptClass,
     /// Vertical margin (e.g. 4, 8)
     pub my: i32,
+    /// Horizontal margin for vertical divider (e.g. 4, 8)
+    pub mx: i32,
     /// Color of the divider
     pub border_color: OptClass,
+    /// Orientation: "horizontal" (default) or "vertical"
+    pub orientation: OptClass,
     /// Ignored, but required for macro
     pub children: Vec<View>,
 }
 
-/// Renders a horizontal divider line (`<hr>`).
+/// Renders a horizontal or vertical divider line.
 ///
 /// **Props:**
+/// - `orientation: OptClass` ("horizontal" | "vertical")
 /// - `class: OptClass`
 /// - `my: i32`
+/// - `mx: i32`
 /// - `border_color: OptClass`
 /// - `children: Vec<View>`
 #[allow(non_snake_case)]
 pub fn Divider(props: DividerProps) -> View {
-    let mut class_str = "w-full border-t".to_string();
-    if props.my > 0 {
-        let my_c = spacing_class("my", props.my);
-        if !my_c.is_empty() {
-            class_str.push(' ');
-            class_str.push_str(my_c);
+    let is_vertical = props.orientation.0.as_deref() == Some("vertical");
+
+    if is_vertical {
+        let mut class_str = "inline-block h-full border-l".to_string();
+        if props.mx > 0 {
+            let mx_c = spacing_class("mx", props.mx);
+            if !mx_c.is_empty() {
+                class_str.push(' ');
+                class_str.push_str(mx_c);
+            }
         }
-    }
+        let color_c = border_color_class(props.border_color.0.as_deref().unwrap_or("gray-200"));
+        if !color_c.is_empty() {
+            class_str.push(' ');
+            class_str.push_str(color_c);
+        }
+        class_str.push_str(" dark:border-gray-800");
 
-    let color_c = border_color_class(props.border_color.0.as_deref().unwrap_or("gray-200"));
-    if !color_c.is_empty() {
-        class_str.push(' ');
-        class_str.push_str(color_c);
-    }
-    class_str.push_str(" dark:border-gray-800"); // default dark mode
+        if let Some(c) = props.class.0 {
+            class_str.push(' ');
+            class_str.push_str(&c);
+        }
 
-    if let Some(c) = props.class.0 {
-        class_str.push(' ');
-        class_str.push_str(&c);
-    }
+        element("div")
+            .attr("class", class_str)
+            .attr("role", "separator")
+            .attr("aria-orientation", "vertical")
+            .into_view()
+    } else {
+        let mut class_str = "w-full border-t".to_string();
+        if props.my > 0 {
+            let my_c = spacing_class("my", props.my);
+            if !my_c.is_empty() {
+                class_str.push(' ');
+                class_str.push_str(my_c);
+            }
+        }
 
-    element("hr").attr("class", class_str).into_view()
+        let color_c = border_color_class(props.border_color.0.as_deref().unwrap_or("gray-200"));
+        if !color_c.is_empty() {
+            class_str.push(' ');
+            class_str.push_str(color_c);
+        }
+        class_str.push_str(" dark:border-gray-800"); // default dark mode
+
+        if let Some(c) = props.class.0 {
+            class_str.push(' ');
+            class_str.push_str(&c);
+        }
+
+        element("hr").attr("class", class_str).into_view()
+    }
 }
 
 /// Properties for `Image` component.

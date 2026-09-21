@@ -215,3 +215,79 @@ pub fn Router(props: RouterProps) -> View {
 pub fn router(children: Vec<View>) -> View {
     Router(RouterProps { children })
 }
+
+/// Properties for the DocsPagination component.
+#[derive(Default)]
+pub struct DocsPaginationProps {
+    /// Previous page title
+    pub prev_title: OptClass,
+    /// Previous page URL
+    pub prev_href: OptClass,
+    /// Next page title
+    pub next_title: OptClass,
+    /// Next page URL
+    pub next_href: OptClass,
+    /// Custom CSS class overrides
+    pub class: OptClass,
+    pub children: Vec<View>,
+}
+
+/// Renders a Previous / Next pagination navigation bar, ideal for documentation pages.
+#[allow(non_snake_case)]
+pub fn DocsPagination(props: DocsPaginationProps) -> View {
+    let mut class_str = "flex items-center justify-between border-t border-border pt-6 mt-12 w-full gap-4".to_string();
+    if let Some(c) = props.class.0 {
+        class_str.push(' ');
+        class_str.push_str(&c);
+    }
+
+    let prev_view = if let (Some(title), Some(href)) = (props.prev_title.0, props.prev_href.0) {
+        element("a")
+            .attr("href", href)
+            .attr("class", "group flex flex-col gap-1 text-sm font-medium transition-colors hover:text-primary")
+            .child(element("span").attr("class", "text-xs text-muted-foreground").child(text("← Previous")))
+            .child(element("span").child(text(title)))
+            .into_view()
+    } else {
+        View::None
+    };
+
+    let next_view = if let (Some(title), Some(href)) = (props.next_title.0, props.next_href.0) {
+        element("a")
+            .attr("href", href)
+            .attr("class", "group flex flex-col gap-1 text-sm font-medium text-right ml-auto transition-colors hover:text-primary")
+            .child(element("span").attr("class", "text-xs text-muted-foreground").child(text("Next →")))
+            .child(element("span").child(text(title)))
+            .into_view()
+    } else {
+        View::None
+    };
+
+    element("nav")
+        .attr("class", class_str)
+        .attr("aria-label", "Documentation pagination")
+        .child(prev_view)
+        .child(next_view)
+        .into_view()
+}
+
+pub type PaginationProps = DocsPaginationProps;
+
+/// Alias for DocsPagination component.
+#[allow(non_snake_case)]
+pub fn Pagination(props: PaginationProps) -> View {
+    DocsPagination(props)
+}
+
+pub fn docs_pagination(
+    prev: Option<(&str, &str)>,
+    next: Option<(&str, &str)>,
+) -> View {
+    DocsPagination(DocsPaginationProps {
+        prev_title: prev.map(|p| p.0).into(),
+        prev_href: prev.map(|p| p.1).into(),
+        next_title: next.map(|n| n.0).into(),
+        next_href: next.map(|n| n.1).into(),
+        ..Default::default()
+    })
+}

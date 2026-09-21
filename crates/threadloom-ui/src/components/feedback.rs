@@ -202,30 +202,52 @@ pub fn toast(message: impl Into<String>) -> View {
 pub struct TooltipProps {
     /// The text displayed in the tooltip when hovering.
     pub tooltip_text: String,
+    /// Content string to display in the tooltip (alias for tooltip_text).
+    pub content: String,
+    /// Custom CSS class overrides.
+    pub class: OptClass,
     /// The target elements that trigger the tooltip on hover.
     pub children: Vec<View>,
 }
 
 /// Renders a Tooltip component.
 ///
-///
 /// **Props:**
-/// - `tooltip_text: String`
+/// - `content: String` (or `tooltip_text: String`)
+/// - `class: OptClass`
 /// - `children: Vec<View>`
 #[allow(non_snake_case)]
 pub fn Tooltip(props: TooltipProps) -> View {
-    let mut b = element("div").attr("class", "tl-tooltip-wrapper");
+    let text_content = if !props.content.is_empty() {
+        props.content
+    } else {
+        props.tooltip_text
+    };
+
+    let mut class_str = "tl-tooltip-wrapper".to_string();
+    if let Some(c) = props.class.0 {
+        class_str.push(' ');
+        class_str.push_str(&c);
+    }
+
+    let mut b = element("div").attr("class", class_str);
     for child in props.children { b = b.child(child); }
     b.child(
         element("div")
             .attr("class", "tl-tooltip")
             .attr("role", "tooltip")
-            .child(text(props.tooltip_text))
+            .child(text(text_content))
     ).into_view()
 }
 
-pub fn tooltip(content: View, tooltip_text: impl Into<String>) -> View {
-    Tooltip(TooltipProps { tooltip_text: tooltip_text.into(), children: vec![content], ..Default::default() })
+pub fn tooltip(children: View, tooltip_text: impl Into<String>) -> View {
+    let t = tooltip_text.into();
+    Tooltip(TooltipProps {
+        content: t.clone(),
+        tooltip_text: t,
+        children: vec![children],
+        ..Default::default()
+    })
 }
 
 /// Properties for Suspense component.

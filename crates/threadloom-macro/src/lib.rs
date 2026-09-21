@@ -241,6 +241,11 @@ fn render_node(node: &Node, path: String) -> TokenStream2 {
                             "drag_start" | "dragstart" => "dragstart",
                             "drag_end" | "dragend" => "dragend",
                             "drag_over" | "dragover" => "dragover",
+                            "drag_enter" | "dragenter" => "dragenter",
+                            "drag_leave" | "dragleave" => "dragleave",
+                            "copy" => "copy",
+                            "paste" => "paste",
+                            "cut" => "cut",
                             other => other,
                         };
                         builder = quote::quote_spanned! {span=> #builder.on(#event_name, #value) };

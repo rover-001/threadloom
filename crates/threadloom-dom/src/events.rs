@@ -11,8 +11,8 @@ pub(crate) fn setup_global_listeners(document: &Document) {
     let window = web_sys::window().unwrap();
     let events = [
         "click", "dblclick", "input", "change", "keydown", "keyup",
-        "wheel", "contextmenu", "copy", "paste",
-        "drag", "dragstart", "dragend", "dragover", "drop",
+        "wheel", "contextmenu", "copy", "paste", "cut",
+        "drag", "dragstart", "dragend", "dragover", "dragenter", "dragleave", "drop",
         "mouseleave", "mouseenter", "scroll",
     ];
     for event_name in events {
@@ -43,7 +43,7 @@ pub(crate) fn setup_global_listeners(document: &Document) {
             }
         })
             as Box<dyn FnMut(web_sys::Event)>);
-        let use_capture = event_name == "mouseleave" || event_name == "mouseenter";
+        let use_capture = event_name == "mouseleave" || event_name == "mouseenter" || event_name == "scroll";
         window
             .add_event_listener_with_callback_and_bool(
                 event_name,

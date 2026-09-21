@@ -455,3 +455,60 @@ where
         View::KeyedList(views)
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_element_builder_and_render_to_string() {
+        let el = element("div")
+            .attr("id", "main")
+            .attr("class", "container mx-auto")
+            .child(element("h1").child(text("Welcome")))
+            .child(element("p").attr("data-test", "desc").child(text("Hello world!")));
+
+        let html = render_to_string(&el.into_view());
+        assert!(html.starts_with("<div"));
+        assert!(html.contains("id=\"main\""));
+        assert!(html.contains("class=\"container mx-auto\""));
+        assert!(html.contains("<h1>Welcome</h1>"));
+        assert!(html.contains("<p data-test=\"desc\">Hello world!</p>"));
+        assert!(html.ends_with("</div>"));
+    }
+
+    #[test]
+    fn test_fragment_rendering() {
+        let frag = fragment(vec![
+            element("span").child(text("Item 1")).into_view(),
+            element("span").child(text("Item 2")).into_view(),
+        ]);
+        let html = render_to_string(&frag);
+        assert_eq!(html, "<span>Item 1</span><span>Item 2</span>");
+    }
+
+    #[test]
+    fn test_boolean_and_dynamic_attributes() {
+        let el = element("input")
+            .attr("type", "checkbox")
+            .attr("checked", true)
+            .attr("disabled", false);
+
+        let html = render_to_string(&el.into_view());
+        assert!(html.contains("type=\"checkbox\""));
+        assert!(html.contains("checked"));
+        // disabled=false should not render disabled="true"
+        assert!(!html.contains("disabled=\"disabled\""));
+
+        let dyn_el = element("div").attr("data-count", || "42".to_string());
+        let dyn_html = render_to_string(&dyn_el.into_view());
+        assert!(dyn_html.contains("data-count=\"42\""));
+    }
+
+    #[test]
+    fn test_with_attr_modifier() {
+        let view = element("div").into_view().with_attr("data-custom", "value");
+        let html = render_to_string(&view);
+        assert!(html.contains("data-custom=\"value\""));
+    }
+}
